@@ -1,0 +1,167 @@
+[
+  {
+    "id": 1,
+    "kind": "rain",
+    "title": "Pada? Włącz światła",
+    "pages": [
+      "PADA?",
+      "WŁĄCZ ŚWIATŁA"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 2,
+    "kind": "thumb",
+    "title": "Dzięki!",
+    "pages": [
+      "Dzięki!"
+    ],
+    "color": "#ffffff",
+    "animated": true
+  },
+  {
+    "id": 3,
+    "kind": "brakes",
+    "title": "Mam dobre hamulce",
+    "pages": [
+      "MAM DOBRE",
+      "HAMULCE"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 4,
+    "kind": "speed",
+    "title": "50",
+    "pages": [
+      "50"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 5,
+    "kind": "speed",
+    "title": "90",
+    "pages": [
+      "90"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 6,
+    "kind": "speed",
+    "title": "30",
+    "pages": [
+      "30"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 7,
+    "kind": "text",
+    "title": "Wyreguluj światła",
+    "pages": [
+      "KAMIENIE W\nBAGAŻNIKU?",
+      "WYREGULUJ ŚWIATŁA",
+      "ŚWIECISZ PO OCZACH"
+    ],
+    "color": "#ff3030",
+    "animated": true
+  },
+  {
+    "id": 8,
+    "kind": "text",
+    "title": "Jedź za mną",
+    "pages": [
+      "JEDŹ ZA MNĄ"
+    ],
+    "color": "#ffffff",
+    "animated": false
+  },
+  {
+    "id": 9,
+    "kind": "pedestrians",
+    "title": "Uwaga, piesi!",
+    "pages": [
+      "UWAGA,",
+      "PIESI!"
+    ],
+    "color": "#ff3030",
+    "animated": false
+  },
+  {
+    "id": 10,
+    "kind": "text",
+    "title": "Parkuję / cofam",
+    "pages": [
+      "PARKUJĘ",
+      "COFAM"
+    ],
+    "color": "#ff3030",
+    "animated": false
+  },
+  {
+    "id": 11,
+    "kind": "left",
+    "title": "Droga wolna",
+    "pages": [
+      "DROGA WOLNA"
+    ],
+    "color": "#ffffff",
+    "animated": true
+  },
+  {
+    "id": 12,
+    "kind": "hazard",
+    "title": "Trójkąty ostrzegawcze",
+    "pages": [],
+    "color": "#ff3030",
+    "animated": false,
+    "unlimited": true
+  },
+  {
+    "id": 13,
+    "kind": "ford",
+    "title": "Ford",
+    "pages": [],
+    "color": "#ffffff",
+    "animated": false
+  },
+  {
+    "id": 14,
+    "kind": "honda",
+    "title": "Honda",
+    "pages": [
+      "HONDA"
+    ],
+    "color": "#ffffff",
+    "animated": false
+  },
+  {
+    "id": 15,
+    "kind": "text",
+    "title": "Policz do 10 / weź oddech",
+    "pages": [
+      "POLICZ DO 10",
+      "WEŹ ODDECH"
+    ],
+    "color": "#ffffff",
+    "animated": false
+  },
+  {
+    "id": 16,
+    "kind": "text",
+    "title": "Uwaga! Fotoradar",
+    "pages": [
+      "UWAGA!",
+      "FOTORADAR"
+    ],
+    "color": "#ff3030",
+    "animated": false
+  }
+]
