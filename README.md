@@ -1,24 +1,39 @@
 # RearSignal
 
-Author: Mariusz Matłosz. Original project code is licensed under MIT. Dependencies and manufacturer materials retain their respective licenses.
+A touchscreen remote for compatible iPixel Color 96×16 LED panels. RearSignal runs on the OpenNextion ONX2432G028 V1.3 (ESP32-S3R8) and controls the panel over BLE.
 
-An OpenNextion ONX2432G028 V1.3 (ESP32-S3R8) touchscreen remote controlling a LUXONIC 16×96 LED panel over iPixel Color BLE.
+Author: Mariusz Matłosz. Original project code is licensed under MIT. Dependencies and third-party assets retain their respective licenses.
 
-## Firmware 0.2
+## Features
 
-Portrait LVGL interface, 240×320: dark background, Roboto with Polish characters, and three tabs with four 6:1 previews each, without scrolling. The top toolbar contains settings, an always-accessible OFF button, and a Bluetooth icon. Bluetooth is gray with a spinner while disconnected and blue when connected.
+- Portrait 240×320 LVGL interface with a dark background and Roboto font.
+- Four native LVGL tabs with four graphical message buttons each, without vertical scrolling.
+- Sixteen static or animated messages, transferred to the panel as GIFs.
+- Image previews generated from the same artwork as the panel content. Animated button previews show four sampled frames rather than the complete GIF.
+- An always-accessible OFF button, Bluetooth connection status, and playback indicators.
+- BLE discovery, device selection, saved-device reconnection, and a Forget option.
+- Configurable playback duration of 1–60 seconds. The three warning triangles remain on until OFF or another message is selected.
+- Separate LCD and LED panel brightness controls, with settings saved in NVS.
 
-Tapping an item transfers a 96×16 GIF to the panel. The local animated preview, spinner, and progress bar start after the panel acknowledges reception and ON is sent. The remote sends OFF when the configured duration expires. A red outline indicates a transfer error. The 12 included animations are temporary demos to be replaced with the intended content.
+## Connecting a panel
 
-Settings: turn the panel off after the first connection (enabled by default), duration of 1–60 seconds (default: 8 seconds, entered using a numeric keyboard), LCD PWM brightness of 5–100%, and separate panel brightness of 1–100%. Settings are stored in NVS. Brightness is saved when the slider is released; duration is saved when confirmed on the keyboard. The Info screen identifies RearSignal, Mariusz Matłosz, and MIT. No clock is used.
+Power the remote and a compatible iPixel 96×16 panel. Disconnect other apps that may be using the panel, open the Bluetooth screen, scan, and select the device. The selection is saved for automatic reconnection. Use Forget to clear it and select another panel.
 
-Use the Bluetooth screen to scan for compatible iPixel 96×16 panels and select a device to connect. The selected device is saved for automatic reconnection; use Forget to clear the selection and choose another panel. No individual panel identifier is hardcoded. The remote uses service `000000fa-0000-1000-8000-00805f9b34fb`, FA02 writes, and FA03 notifications. GIF transfers use CRC32 and acknowledged application windows of up to 12288 bytes, as in pypixelcolor; transport chunks are sized according to the MTU. OFF and a new selection finish the current protocol frame before processing the next command. The queue keeps the latest request. After an error, the connection is re-established and OFF is sent. Reconnection always starts with OFF, without automatically resuming an animation.
+The firmware checks the panel's reported device type and password flag. Device selection is a BLE GATT connection, not authenticated Bluetooth bonding. Panels reporting that a password is required are not supported by the current connection flow. Saving a device does not prevent other controllers from accessing the panel.
 
-GATT ON/OFF writes do not read the panel's physical state. Automatic shutoff requires the remote to remain powered and connected over BLE. The panel's factory startup animation may appear before BLE connects. Disabling startup OFF leaves the panel's state unchanged on the first connection; it does not automatically send ON or start an animation.
+## Playback and settings
 
-## Building
+Tap a graphical message button to transfer its GIF to the panel. After reception is acknowledged and ON is sent, the playback timer starts. The remote sends OFF when the configured duration expires, except for the unlimited warning-triangle message. OFF or another selection interrupts playback; an ongoing transfer finishes its current protocol frame before processing the new request.
 
-Arduino ESP32 core 3.3.2. Libraries verified during project setup:
+Settings include startup OFF, playback duration (default: 8 seconds), LCD brightness of 5–100%, and panel brightness of 1–100%. Brightness is saved when the slider is released; duration is saved when confirmed using the numeric keyboard.
+
+Startup OFF sends OFF after the first BLE connection. Disabling it leaves the panel's existing state unchanged on that connection. Reconnection always sends OFF and does not automatically resume a message.
+
+Automatic shutoff requires the remote to remain powered and connected. ON/OFF writes do not provide a readback of the panel's physical state. A panel's factory startup animation may appear before BLE connects.
+
+## Building and uploading
+
+Use Arduino ESP32 core 3.3.2 with:
 
 - GFX Library for Arduino 1.6.9
 - Adafruit CST8XX Library 1.1.1
@@ -27,41 +42,50 @@ Arduino ESP32 core 3.3.2. Libraries verified during project setup:
 - LVGL 8.3.11
 - NimBLE-Arduino 2.3.6
 
-In Arduino IDE, select ESP32S3 Dev Module, 16 MB flash, OPI PSRAM, and the 16M Flash (3MB APP/9.9MB FATFS) partition scheme. USB_UART uses a USB-to-UART converter; firmware logs are available on UART0 at 115200 baud. Leave USB CDC On Boot disabled for these logs.
+In Arduino IDE, select ESP32S3 Dev Module, 16 MB flash, OPI PSRAM, and the 16M Flash (3MB APP/9.9MB FATFS) partition scheme. Leave USB CDC On Boot disabled.
+
+USB_UART uses a CH34x USB-to-UART controller. Install a CH34x driver if required by your operating system.
+
+Run these commands from the repository root, replacing `SERIAL_PORT` with the board's serial port:
 
 ```sh
 arduino-cli compile --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,CDCOnBoot=default' firmware/remote
-arduino-cli upload --port /dev/cu.YOUR_PORT --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,CDCOnBoot=default' firmware/remote
+arduino-cli upload --port SERIAL_PORT --fqbn 'esp32:esp32:esp32s3:FlashSize=16M,PartitionScheme=app3M_fat9M_16MB,PSRAM=opi,CDCOnBoot=default' firmware/remote
 ```
 
-## Hardware testing
+## Editing graphics
 
-1. Disconnect iPixel and power the panel. Start the remote and verify BLE connection and panel shutoff.
-2. Check all three tabs, each with four items and no scrolling.
-3. Start a GIF. Verify panel animation, preview, and automatic OFF.
-4. Press OFF during playback and transfer. Verify that the animation does not restart.
-5. In settings, test LCD and panel brightness separately, durations of 1 and 60 seconds, and rejection of empty input, 0, and values above 60.
-6. Restart and verify saved settings and the startup OFF option. Reconnection must not automatically resume playback.
-7. Check the Info screen and OFF availability in both settings and Info.
+Message definitions are in `firmware/remote/assets/messages.json`. Icon drawing and animation logic are in `tools/generate_assets.py`.
 
-UART diagnostics: `0` sends OFF, `1` turns on the stored content, `a`–`l` select the twelve GIFs, and `+`/`-` adjust panel brightness by 10 percentage points. Diagnostic brightness changes are not saved in NVS. Software tests do not replace visual inspection of the LCD and panel response.
+After editing the artwork, regenerate the assets before compiling the firmware:
 
-## References
+```sh
+python3 -m pip install -r tools/requirements.txt
+python3 tools/generate_assets.py
+```
 
-Pin assignments and LCD reset configuration come from the [OpenNextion documentation](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028), reference revision `2aafcc6bf76d95abaccf53443b7cfa6bc257d452`. The firmware is a separate program built with standard libraries.
+The generator writes GIFs, PNG previews, and `firmware/remote/assets.h`. Assets are embedded in flash; no filesystem or SD card is required. See the [asset README](firmware/remote/assets/README.md) for attribution.
 
-ON/OFF frames are described in the [iPixel protocol documentation](https://github.com/sphings79/ha-ble-led-pixel-display/blob/main/docs/protocol.md). Their operation was verified using Python/Bleak and visually on the user's panel on 2026-11-17. Firmware compilation and upload succeeded on 2026-11-17. The initial program uses 862415 bytes (27% of the partition), with 98616 bytes of static data (30% of RAM). esptool verified the uploaded program hash. Hardware logs confirmed touch initialization, panel discovery, BLE connection, OFF after connection, and ON/OFF writes requested over the serial port. The user confirmed correct operation of the touchscreen ON/OFF buttons and panel response on 2026-11-17.
+## Functional checks
 
-The OpenNextion port is `/dev/cu.wchusbserial210` (WCH VID:PID 1A86:7522). The signed CH34xVCPDriver supplied in the official OpenNextion repository was activated. Port `usbmodem210MARZMZ3502` belongs to the LG monitor.
+1. Scan for a panel, select it, and verify reconnection after a restart.
+2. Check all four tabs and their graphical buttons.
+3. Verify animated and static content, timed shutoff, and the unlimited warning triangles.
+4. Test OFF during playback and transfer, and when selecting another message.
+5. Check both brightness controls, duration limits, and settings persistence.
+6. Verify startup OFF, reconnection behavior, and availability of OFF in settings and Info.
+7. Use Forget and verify that another compatible panel can be selected.
 
-Local binaries and the test log are in the ignored `build/power-mvp/` directory. The full factory flash backup (16 MB) is stored at `build/backups/onx2432g028-factory-2026-11-17.bin`. It was read in chunks with retries for USB errors. Backup SHA-256: `ef94ed1b35dacb5a393fe1837e61b3a4082f2a1b3051c21aeae3a3fd20da22fc`.
+UART diagnostics: `0` sends OFF, `1` turns on the panel's current content, `a`–`p` select the sixteen messages, and `+`/`-` adjust panel brightness by 10 percentage points without saving it. Line commands start with `:` and end with a newline: `:scan`, `:pair INDEX` (zero-based discovery index), `:forget`, `:status`, and `:time SECONDS`. The diagnostic duration override is not saved.
+
+## Protocol and references
+
+Communication uses service `000000fa-0000-1000-8000-00805f9b34fb`, FA02 writes, and FA03 notifications. GIF transfers use CRC32 and acknowledged application windows of up to 12288 bytes, split into GATT writes according to the negotiated MTU.
+
+- [OpenNextion documentation and examples](https://github.com/OpenNextion/OpenNextion-SKU-ONX2432G028), reference revision `2aafcc6bf76d95abaccf53443b7cfa6bc257d452`, for hardware pin assignments and LCD reset configuration.
+- [iPixel protocol documentation](https://github.com/sphings79/ha-ble-led-pixel-display/blob/main/docs/protocol.md).
+- [pypixelcolor](https://github.com/lucagoc/pypixelcolor), for protocol reference and transfer framing.
 
 ## Enclosure
 
-The manufacturer's PDF drawing, STEP model, and DWG file are in `hardware/enclosure/reference/`. Module dimensions from the drawing are 56 × 78.60 × 15.60 mm. Details and tolerances are documented in that directory's README.
-
-## Firmware 0.2 validation (2026-11-17)
-
-Build: 1078799 bytes of program storage (34%) and 148808 bytes of static data (45%). esptool verified the flash write. Startup: touch initialized successfully, UI created, and 64492 bytes of LVGL memory available. BLE tests confirmed reception of 5099-byte and 3006-byte GIFs, ON, brightness adjustment from 28→38→28, transfer interruption using OFF, and timeout activation. The final OFF command was written successfully. Brightness previously set in the UI survived a restart. All 12 GIF files were checked: 96×16 pixels, four frames, and 180 ms per frame. Full visual inspection of the LCD and all settings remained pending user confirmation at this validation stage.
-
-On this panel, 4 KB framing caused a CRC mismatch for a larger GIF. Using 12 KB windows, as in [pypixelcolor 0.5.0](https://github.com/lucagoc/pypixelcolor), successfully transferred the 5099-byte file. Files larger than 12 KB had not yet been tested. Binaries, compilation and upload logs, and the hardware test log are in `build/ui-v02/`. Application SHA-256: `2b9c74845b69b06d4cef3af143d13b6bf3d69bdbbcf8e0ac15dc67c937210af6`.
+Manufacturer PDF, STEP, and DWG references are in `hardware/enclosure/reference/`. The module measures 56 × 78.60 × 15.60 mm according to the drawing. See the [mechanical reference README](hardware/enclosure/reference/README.md) for tolerances and enclosure clearances.
